@@ -1,2 +1,0 @@
-# techhire-job
-Assignment
