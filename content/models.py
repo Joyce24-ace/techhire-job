@@ -1,6 +1,9 @@
 from django.db import models
 from django.contrib.auth.models import User
 
+
+ # UserProfile model to extend the built-in User model with a premium status
+ 
 class UserProfile(models.Model):
     # Connects to the standard Django User
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
