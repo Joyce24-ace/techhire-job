@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>TechHire Job List</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .premium-badge { background-color: #ffd700; color: #000; font-size: 0.8rem; padding: 2px 6px; border-radius: 4px; font-weight: bold; }
+        .cursor-pointer { cursor: pointer; }
+        .hover-bg-light:hover { background-color: #f8f9fa; }
+    </style>
+</head>
+<body class="bg-light">
+
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card mb-4 shadow-sm">
+                <div class="card-header bg-primary text-white">User Authentication</div>
+                <div class="card-body" id="auth-section">
+                    <input type="text" id="username" class="form-control mb-2" placeholder="Username">
+                    <input type="password" id="password" class="form-control mb-2" placeholder="Password">
+                    <button class="btn btn-primary w-100" onclick="login()">Login</button>
+                    <div id="login-error" class="text-danger mt-2" style="display: none;"></div>
+                </div>
+                <div class="card-body border-top" id="user-info" style="display: none;">
+                    <p class="mb-2">Logged in as: <strong id="current-user"></strong></p>
+                    <button class="btn btn-outline-danger btn-sm w-100" onclick="logout()">Logout</button>
+                </div>
+            </div>
+
+            <div class="card shadow-sm">
+                <div class="card-header bg-secondary text-white">Search & Filter Jobs</div>
+                <div class="card-body">
+                    <input type="text" id="search" class="form-control mb-2" placeholder="Search titles or descriptions...">
+                    <input type="text" id="location" class="form-control mb-2" placeholder="Filter by Location (e.g. Remote)">
+                    <button class="btn btn-secondary w-100" onclick="loadJobs()">Apply Filters</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            <div id="job-detail-card" class="card mb-4 shadow-sm d-none">
+                <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0" id="detail-title"></h5>
+                    <button type="button" class="btn-close btn-close-white" onclick="closeDetail()"></button>
+                </div>
+                <div class="card-body">
+                    <h6 class="text-muted" id="detail-meta"></h6>
+                    <hr>
+                    <div id="detail-content"></div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm">
+                <div class="card-header bg-dark text-white">Latest Job Postings</div>
+                <div class="card-body p-0" id="job-list">
+                    </div>
+                <div class="card-footer d-flex justify-content-between">
+                    <button id="prev-btn" class="btn btn-sm btn-outline-primary" onclick="loadPreviousPage()" disabled>Previous</button>
+                    <button id="next-btn" class="btn btn-sm btn-outline-primary" onclick="loadNextPage()" disabled>Next</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const API_BASE = '/api/';
+    let nextPageUrl = null;
+    let prevPageUrl = null;
+
+    // --- Auth Logic ---
+    async function login() {
+        const user = document.getElementById('username').value;
+        const pass = document.getElementById('password').value;
+        const errorDiv = document.getElementById('login-error');
+
+        try {
+            const response = await fetch(`${API_BASE}token/`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username: user, password: pass })
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                localStorage.setItem('access_token', data.access);
+                errorDiv.style.display = 'none';
+                updateAuthUI();
+                loadJobs();
+            } else {
+                errorDiv.innerText = "Invalid credentials";
+                errorDiv.style.display = 'block';
+            }
+        } catch (e) {
+            errorDiv.innerText = "Connection error";
+            errorDiv.style.display = 'block';
+        }
+    }
+
+    function logout() {
+        localStorage.removeItem('access_token');
+        updateAuthUI();
+        loadJobs();
+    }
+
+    function getHeaders() {
+        const token = localStorage.getItem('access_token');
+        return token ? { 'Authorization': `Bearer ${token}` } : {};
+    }
+
+    function updateAuthUI() {
+        const token = localStorage.getItem('access_token');
+        const authSection = document.getElementById('auth-section');
+        const userInfo = document.getElementById('user-info');
+        
+        if (token) {
+            authSection.style.display = 'none';
+            userInfo.style.display = 'block';
+            document.getElementById('current-user').innerText = "Authenticated User";
+        } else {
+            authSection.style.display = 'block';
+            userInfo.style.display = 'none';
+        }
+    }
+
+    // --- Job List Logic ---
+    async function loadJobs(fetchUrl = null) {
+        let url = fetchUrl;
+        
+        if (!url) {
+            const search = document.getElementById('search').value;
+            const location = document.getElementById('location').value;
+            
+            url = `${API_BASE}jobs/?`;
+            if (search) url += `search=${encodeURIComponent(search)}&`;
+            if (location) url += `location=${encodeURIComponent(location)}&`;
+        }
+
+        try {
+            const response = await fetch(url, { headers: getHeaders() });
+            const data = await response.json();
+
+            const listDiv = document.getElementById('job-list');
+            listDiv.innerHTML = '';
+
+            if (data.results.length === 0) {
+                listDiv.innerHTML = '<p class="p-3 text-center text-muted">No jobs found.</p>';
+            }
+
+            data.results.forEach(job => {
+                // Determine if masked by checking for the lock icon in company_name
+                const isMasked = job.company_name.includes("🔒");
+                const lockBadge = isMasked ? '<span class="premium-badge ms-2">PREMIUM ONLY</span>' : '';
+
+                listDiv.innerHTML += `
+                    <div class="card mb-0 border-bottom rounded-0 cursor-pointer hover-bg-light" onclick="readJob(${job.id})">
+                        <div class="card-body">
+                            <h5 class="card-title text-primary mb-1">${job.title} ${lockBadge}</h5>
+                            <div class="d-flex justify-content-between small text-muted">
+                                <span>${job.company_name}</span>
+                                <span>${job.location}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            nextPageUrl = data.next;
+            prevPageUrl = data.previous;
+            document.getElementById('next-btn').disabled = !nextPageUrl;
+            document.getElementById('prev-btn').disabled = !prevPageUrl;
+
+        } catch (error) {
+            console.error("Failed to fetch jobs:", error);
+        }
+    }
+
+    function loadNextPage() { if (nextPageUrl) loadJobs(nextPageUrl); }
+    function loadPreviousPage() { if (prevPageUrl) loadJobs(prevPageUrl); }
+
+    // --- Job Detail Logic ---
+    async function readJob(id) {
+        try {
+            const response = await fetch(`${API_BASE}jobs/${id}/`, { headers: getHeaders() });
+            const job = await response.json();
+
+            document.getElementById('detail-title').innerText = job.title;
+            document.getElementById('detail-meta').innerText = `${job.company_name} | ${job.location}`;
+            
+            let detailHtml = `
+                <div class="mb-3"><strong>Salary:</strong> ${job.salary_range}</div>
+                <div class="mb-3"><strong>Description:</strong><br>${job.description}</div>
+                <div class="text-center">
+                    <a href="${job.application_link}" class="btn btn-success" target="_blank">Apply for this Position</a>
+                </div>
+            `;
+            document.getElementById('detail-content').innerHTML = detailHtml;
+            
+            document.getElementById('job-detail-card').classList.remove('d-none');
+            document.getElementById('job-detail-card').scrollIntoView({ behavior: 'smooth' });
+        } catch (error) {
+            console.error("Failed to fetch job details:", error);
+        }
+    }
+
+    function closeDetail() {
+        document.getElementById('job-detail-card').classList.add('d-none');
+    }
+
+    // Initialize
+    updateAuthUI();
+    loadJobs();
+</script>
+</body>
+</html>
