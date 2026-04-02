@@ -1,0 +1,179 @@
+{
+  "info": {
+    "_postman_id": "038452bb-5fad-4c49-b45c-63e1622d5635",
+    "name": "Tech hire Premium Job Board",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "53647374"
+  },
+  "item": [
+    {
+      "name": "Basic JWT Token",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"username\": \"basic\",\r\n    \"password\": \"free123456\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://127.0.0.1:8000/api/token/",
+          "protocol": "http",
+          "host": [
+            "127",
+            "0",
+            "0",
+            "1"
+          ],
+          "port": "8000",
+          "path": [
+            "api",
+            "token",
+            ""
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Premium JWT Token Copy",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"username\": \"premium\",\r\n    \"password\": \"sale123456\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://127.0.0.1:8000/api/token/",
+          "protocol": "http",
+          "host": [
+            "127",
+            "0",
+            "0",
+            "1"
+          ],
+          "port": "8000",
+          "path": [
+            "api",
+            "token",
+            ""
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Unauthenticated request",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzc1MTA3MzIwLCJpYXQiOjE3NzUxMDcwMjAsImp0aSI6ImU5ZDBhY2YwNzFlNzQ1NmFiOTdlZWQzOGJjZTAxZWU0IiwidXNlcl9pZCI6IjQifQ.DGZARNgkQ1vas6ekftL49lhcjIUA47jFV7pdcnlYeIU",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://127.0.0.1:8000/api/jobs/",
+          "protocol": "http",
+          "host": [
+            "127",
+            "0",
+            "0",
+            "1"
+          ],
+          "port": "8000",
+          "path": [
+            "api",
+            "jobs",
+            ""
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Authenticated request",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzc1MTA3Mzk0LCJpYXQiOjE3NzUxMDcwOTQsImp0aSI6IjRlOGMxZDU5YTE3ZDQ5ZmViY2YyMGEwY2MzMDk0NDU1IiwidXNlcl9pZCI6IjUifQ.FXOsCvx9W4JPfsPHLA23C-qbq13b3Bwztpkt4fZJFeo",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://127.0.0.1:8000/api/jobs/",
+          "protocol": "http",
+          "host": [
+            "127",
+            "0",
+            "0",
+            "1"
+          ],
+          "port": "8000",
+          "path": [
+            "api",
+            "jobs",
+            ""
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Request for a single Job",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzc1MTA3Mzk0LCJpYXQiOjE3NzUxMDcwOTQsImp0aSI6IjRlOGMxZDU5YTE3ZDQ5ZmViY2YyMGEwY2MzMDk0NDU1IiwidXNlcl9pZCI6IjUifQ.FXOsCvx9W4JPfsPHLA23C-qbq13b3Bwztpkt4fZJFeo",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://127.0.0.1:8000/api/jobs/1/",
+          "protocol": "http",
+          "host": [
+            "127",
+            "0",
+            "0",
+            "1"
+          ],
+          "port": "8000",
+          "path": [
+            "api",
+            "jobs",
+            "1",
+            ""
+          ]
+        }
+      },
+      "response": []
+    }
+  ]
+}
